@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Table, Text, TextInput, CloseButton, Skeleton } from "@mantine/core";
+import { Table, Text, CloseButton, Skeleton, Checkbox } from "@mantine/core";
 
 const columns = [
+  { key: "check", label: "CHECK", width: "1/12", searchable: false },
   { key: "id", label: "ID", width: "1/12", searchable: false },
   { key: "status", label: "Status", width: "1/12", searchable: false },
   { key: "title", label: "Title", width: "2/12", searchable: true },
-  { key: "body", label: "Body", width: "3/12", searchable: true },
+  { key: "body", label: "Body", width: "2/12", searchable: true },
   { key: "username", label: "Username", width: "1/12", searchable: true },
   { key: "city", label: "City", width: "1/12", searchable: true },
   { key: "email", label: "Email", width: "1/12", searchable: false },
@@ -26,6 +27,7 @@ const PlantDiff = () => {
   const tableWrapperRef = useRef(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedRows, setSelectedRows] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,6 +93,38 @@ const PlantDiff = () => {
     });
   });
 
+  const handleRowSelect = (row, isSelected) => {
+    if (isSelected) {
+      setSelectedRows([...selectedRows, row]);
+    } else {
+      setSelectedRows(selectedRows.filter((r) => r.id !== row.id));
+    }
+  };
+
+  const handleWriteToDatabase = () => {
+    const confirmation = window.confirm(
+      "選択したデータを社外用データベースに書き込むことを確認しますか？"
+    );
+
+    if (confirmation) {
+      // Insert your database writing operation here
+      const result = true; // This should be the result of the database operation
+
+      if (result) {
+        setNotification({
+          message: "選択したデータの書き込みが成功しました",
+          type: "success",
+        });
+        setSelectedRows([]); // Clear selection on successful write
+      } else {
+        setNotification({
+          message: "データの書き込みに失敗しました、再度試してみてください",
+          type: "error",
+        });
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 overflow-x-auto">
       <h1 className="text-3xl font-bold mb-4">プラント情報</h1>
@@ -106,14 +140,21 @@ const PlantDiff = () => {
         </div>
       )}
       {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}{" "}
-      <div className="pb-2 bg-white">
+      <div className="pb-2 bg-white flex justify-between">
         <input
           type="text"
           value={searchKeyword}
           onChange={(e) => setSearchKeyword(e.target.value)}
           placeholder="Search"
         />
+        <button
+          className="px-2 py-1 bg-blue-500 text-white rounded"
+          onClick={handleWriteToDatabase}
+        >
+          データベースへ書き込む
+        </button>
       </div>
+      <div></div>
       <div
         className="overflow-x-auto"
         style={{ maxHeight: "75vh" }}
@@ -134,23 +175,63 @@ const PlantDiff = () => {
             {isLoading
               ? Array.from({ length: 10 }).map((_, index) => (
                   <tr key={index}>
-                    {Array.from({ length: columns.length }).map((_, i) => (
-                      <td key={i} colSpan={1}>
-                        <Skeleton height={30} />
-                      </td>
-                    ))}
+                    {columns.map((column) => {
+                      if (column.key === "check") {
+                        return (
+                          <td
+                            key={column.key}
+                            className={`px-4 py-2 w-${column.width}`}
+                            colSpan={1}
+                          >
+                            <Skeleton height={30} />
+                          </td>
+                        );
+                      }
+
+                      return (
+                        <td
+                          key={column.key}
+                          className={`px-4 py-2 w-${column.width}`}
+                        >
+                          <Skeleton height={30} width="80%" />
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))
               : filteredData.map((item) => (
-                  <tr key={item.id}>
-                    {columns.map((column) => (
-                      <td
-                        key={`${item.id}-${column.key}`}
-                        className={`px-4 py-2 w-${column.width}`}
-                      >
-                        {<Text>{item[column.key]}</Text>}
-                      </td>
-                    ))}
+                  <tr
+                    key={item.id}
+                    className={`${
+                      item.status === "新規" ? "bg-green-100" : "bg-blue-100"
+                    }`}
+                  >
+                    {columns.map((column) => {
+                      if (column.key === "check") {
+                        return (
+                          <td key={`${item.id}-${column.key}`}>
+                            <input
+                              type="checkbox"
+                              checked={selectedRows.some(
+                                (r) => r.id === item.id
+                              )}
+                              onChange={(e) =>
+                                handleRowSelect(item, e.target.checked)
+                              }
+                            />
+                          </td>
+                        );
+                      }
+
+                      return (
+                        <td
+                          key={`${item.id}-${column.key}`}
+                          className={`px-4 py-2 w-${column.width}`}
+                        >
+                          <Text>{item[column.key]}</Text>
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
           </tbody>
