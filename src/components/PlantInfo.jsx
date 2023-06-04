@@ -1,6 +1,16 @@
-// src/components/EditableTable.jsx
 import React, { useEffect, useState, useRef } from "react";
 import { Table, Text, TextInput, CloseButton, Skeleton } from "@mantine/core";
+
+const columns = [
+  { key: "id", label: "ID", width: "1/12", searchable: false },
+  { key: "title", label: "Title", width: "2/12", searchable: true },
+  { key: "body", label: "Body", width: "3/12", searchable: true },
+  { key: "username", label: "Username", width: "1/12", searchable: true },
+  { key: "city", label: "City", width: "1/12", searchable: true },
+  { key: "email", label: "Email", width: "1/12", searchable: false },
+  { key: "phone", label: "Phone", width: "1/12", searchable: false },
+  { key: "actions", label: "Actions", width: "1/12", searchable: false },
+];
 
 const PlantInfo = () => {
   const [data, setData] = useState([]);
@@ -145,7 +155,7 @@ const PlantInfo = () => {
     }
     setData((prevData) =>
       prevData.map((item) =>
-        item.id === id && (key === "email" || key === "phone") //|| key === "city")
+        item.id === id && (key === "email" || key === "phone")
           ? { ...item, [key]: value, editable: isEditable }
           : item
       )
@@ -158,21 +168,20 @@ const PlantInfo = () => {
   };
 
   const filteredData = data.filter((item) => {
-    // 必要なフィールドに対して検索を実行
-    const searchableFields = ["title", "body", "username", "city"];
-    for (const field of searchableFields) {
-      if (item[field].toLowerCase().includes(searchKeyword.toLowerCase())) {
-        return true;
+    return columns.some((column) => {
+      if (column.searchable && typeof item[column.key] === "string") {
+        return item[column.key]
+          .toLowerCase()
+          .includes(searchKeyword.toLowerCase());
       }
-    }
-    return false;
+      return false;
+    });
   });
 
   return (
-    <div className="container mx-auto p-4 overflow-x-auto ">
+    <div className="container mx-auto p-4 overflow-x-auto">
       <h1 className="text-3xl font-bold mb-4">プラント情報</h1>
       <p>~ CRM_UNIT_ID, CRM_PLANT_ID の更新 ~</p>
-      {/* 通知の表示 */}
       {notification && (
         <div
           className={`p-4 mb-4 ${
@@ -201,21 +210,18 @@ const PlantInfo = () => {
         <Table>
           <thead ref={headerRef} className="bg-white">
             <tr>
-              <th className="px-4 py-2 w-1/12">ID</th>
-              <th className="px-4 py-2 w-2/12">Title</th>
-              <th className="px-4 py-2 w-3/12">Body</th>
-              <th className="px-4 py-2 w-1/12">Username</th>
-              <th className="px-4 py-2 w-1/12">City</th>
-              <th className="px-4 py-2 w-1/12">Email</th>
-              <th className="px-4 py-2 w-1/12">Phone</th>
-              <th className="px-4 py-2 w-1/12">Actions</th>
+              {columns.map((column) => (
+                <th key={column.key} className={`px-4 py-2 w-${column.width}`}>
+                  {column.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody ref={tableRef}>
             {isLoading
               ? Array.from({ length: 10 }).map((_, index) => (
                   <tr key={index}>
-                    {Array.from({ length: 8 }).map((_, i) => (
+                    {Array.from({ length: columns.length }).map((_, i) => (
                       <td key={i} colSpan={1}>
                         <Skeleton height={30} />
                       </td>
@@ -224,70 +230,51 @@ const PlantInfo = () => {
                 ))
               : filteredData.map((item) => (
                   <tr key={item.id}>
-                    <td className="px-4 py-2 w-1/12">
-                      <Text>{item.id}</Text>
-                    </td>
-                    <td className="px-4 py-2 w-2/12">
-                      <Text>{item.title}</Text>
-                    </td>
-                    <td className="px-4 py-2 w-3/12">
-                      <Text>{item.body}</Text>
-                    </td>
-                    <td className="px-4 py-2 w-1/12">
-                      <Text>{item.username}</Text>
-                    </td>
-                    <td className="px-4 py-2 w-1/12">
-                      <Text>{item.city}</Text>
-                    </td>
-                    <td className="px-4 py-2 w-1/12">
-                      {item.editable ? (
-                        <TextInput
-                          value={item.email}
-                          onChange={(e) =>
-                            handleInputChange(e, item.id, "email")
-                          }
-                        />
-                      ) : (
-                        <Text>{item.email}</Text>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 w-1/12">
-                      {item.editable ? (
-                        <TextInput
-                          value={item.phone}
-                          onChange={(e) =>
-                            handleInputChange(e, item.id, "phone")
-                          }
-                        />
-                      ) : (
-                        <Text>{item.phone}</Text>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 w-1/12">
-                      {item.editable ? (
-                        <>
-                          <button
-                            className="px-2 py-1 bg-blue-500 text-white rounded"
-                            onClick={() => handleSaveClick(item.id)}
-                          >
-                            Save
-                          </button>
-                          <button
-                            className="px-2 py-1 bg-red-500 text-white rounded"
-                            onClick={() => handleCancelClick(item.id)}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          className="px-2 py-1 bg-green-500 text-white rounded"
-                          onClick={() => handleEditClick(item.id)}
-                        >
-                          Edit
-                        </button>
-                      )}
-                    </td>
+                    {columns.map((column) => (
+                      <td
+                        key={`${item.id}-${column.key}`}
+                        className={`px-4 py-2 w-${column.width}`}
+                      >
+                        {column.key === "actions" ? (
+                          item.editable ? (
+                            <>
+                              <button
+                                className="px-2 py-1 bg-blue-500 text-white rounded"
+                                onClick={() => handleSaveClick(item.id)}
+                              >
+                                Save
+                              </button>
+                              <button
+                                className="px-2 py-1 bg-red-500 text-white rounded"
+                                onClick={() => handleCancelClick(item.id)}
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              className="px-2 py-1 bg-green-500 text-white rounded"
+                              onClick={() => handleEditClick(item.id)}
+                            >
+                              Edit
+                            </button>
+                          )
+                        ) : column.key === "email" || column.key === "phone" ? (
+                          item.editable ? (
+                            <TextInput
+                              value={item[column.key]}
+                              onChange={(e) =>
+                                handleInputChange(e, item.id, column.key)
+                              }
+                            />
+                          ) : (
+                            <Text>{item[column.key]}</Text>
+                          )
+                        ) : (
+                          <Text>{item[column.key]}</Text>
+                        )}
+                      </td>
+                    ))}
                   </tr>
                 ))}
           </tbody>
