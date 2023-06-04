@@ -35,7 +35,9 @@ const PlantDiff = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedData, setSelectedData] = useState([]);
   const [isConfirmationOpen, setConfirmationOpen] = useState(false); // モーダルの表示状態
+  const [isWriteButtonDisabled, setIsWriteButtonDisabled] = useState(true); // データベース書き込みボタンの無効化フラグ
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,6 +79,11 @@ const PlantDiff = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // データベース書き込みボタンの無効化状態を更新
+    setIsWriteButtonDisabled(selectedRows.length === 0);
+  }, [selectedRows]);
 
   const handleScroll = () => {
     const tableHeader = headerRef.current;
@@ -121,6 +128,10 @@ const PlantDiff = () => {
           message: "選択したデータの書き込みが成功しました",
           type: "success",
         });
+        setTimeout(() => {
+          setNotification(null);
+        }, 3000); // Hide the notification after 5 seconds
+
         setSelectedRows([]); // 成功した場合は選択した行をクリア
       } else {
         setNotification({
@@ -132,8 +143,20 @@ const PlantDiff = () => {
   };
 
   const handleWriteToDatabase = () => {
+    setSelectedData(
+      selectedRows.map((row) => ({
+        id: row.id,
+        status: row.status,
+        title: row.title,
+      }))
+    );
     setConfirmationOpen(true); // 確認モーダルを表示
   };
+
+  // データベース書き込みボタンのクラス名を動的に設定
+  const writeButtonClassName = `px-2 py-1 rounded text-white ${
+    isWriteButtonDisabled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500"
+  }`;
 
   return (
     <div className="container mx-auto p-4 overflow-x-auto">
@@ -150,7 +173,7 @@ const PlantDiff = () => {
         </div>
       )}
       {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
-      <div className="pb-2 bg-white flex justify-between">
+      <div className=" bg-white flex justify-between">
         <input
           type="text"
           value={searchKeyword}
@@ -158,8 +181,9 @@ const PlantDiff = () => {
           placeholder="Search"
         />
         <button
-          className="px-2 py-1 bg-blue-500 text-white rounded"
+          className={writeButtonClassName}
           onClick={handleWriteToDatabase}
+          disabled={isWriteButtonDisabled}
         >
           データベースへ書き込む
         </button>
@@ -171,7 +195,7 @@ const PlantDiff = () => {
         ref={tableWrapperRef}
       >
         <Table>
-          <thead ref={headerRef} className="bg-white">
+          <thead ref={headerRef} className="bg-white z-10 relative">
             <tr>
               {columns.map((column) => (
                 <th key={column.key} className={`px-4 py-2 w-${column.width}`}>
@@ -219,15 +243,17 @@ const PlantDiff = () => {
                       if (column.key === "check") {
                         return (
                           <td key={`${item.id}-${column.key}`}>
-                            <input
-                              type="checkbox"
-                              checked={selectedRows.some(
-                                (r) => r.id === item.id
-                              )}
-                              onChange={(e) =>
-                                handleRowSelect(item, e.target.checked)
-                              }
-                            />
+                            <div className="flex justify-center items-center h-full z-0">
+                              <input
+                                type="checkbox"
+                                checked={selectedRows.some(
+                                  (r) => r.id === item.id
+                                )}
+                                onChange={(e) =>
+                                  handleRowSelect(item, e.target.checked)
+                                }
+                              />
+                            </div>
                           </td>
                         );
                       }
@@ -251,9 +277,32 @@ const PlantDiff = () => {
         opened={isConfirmationOpen}
         onClose={() => setConfirmationOpen(false)}
         title="データ書き込みの確認"
-        size="sm"
+        size="md" // モーダルの幅を "md" に変更
       >
         <Text>選択したデータを社外用データベースに書き込みますか？</Text>
+        {selectedData.length > 0 && (
+          <div>
+            <h3>選択されたデータ:</h3>
+            <Table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Status</th>
+                  <th>タイトル</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedData.map((data) => (
+                  <tr key={data.id}>
+                    <td>{data.id}</td>
+                    <td>{data.status}</td>
+                    <td>{data.title}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        )}
         <div className="mt-4 flex justify-end">
           <button
             className="px-4 py-2 mr-2 bg-green-500 text-white rounded"
