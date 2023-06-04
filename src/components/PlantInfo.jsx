@@ -192,21 +192,21 @@ const PlantInfo = () => {
           <CloseButton size="xl" iconSize={20} onClick={closeNotification} />
         </div>
       )}
-      {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
+      {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}{" "}
+      <div className="pb-2 bg-white">
+        <input
+          type="text"
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.target.value)}
+          placeholder="Search"
+        />
+      </div>
       <div
         className="overflow-x-auto"
         style={{ maxHeight: "75vh" }}
         onScroll={handleScroll}
         ref={tableWrapperRef}
       >
-        <div className="pb-2">
-          <input
-            type="text"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            placeholder="Search"
-          />
-        </div>
         <Table>
           <thead ref={headerRef} className="bg-white">
             <tr>
