@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Table, Text, CloseButton, Skeleton, Checkbox } from "@mantine/core";
+import {
+  Table,
+  Text,
+  CloseButton,
+  Skeleton,
+  Checkbox,
+  Modal,
+} from "@mantine/core";
 
 const columns = [
   { key: "check", label: "CHECK", width: "1/12", searchable: false },
@@ -28,6 +35,7 @@ const PlantDiff = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedRows, setSelectedRows] = useState([]);
+  const [isConfirmationOpen, setConfirmationOpen] = useState(false); // モーダルの表示状態
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,21 +109,19 @@ const PlantDiff = () => {
     }
   };
 
-  const handleWriteToDatabase = () => {
-    const confirmation = window.confirm(
-      "選択したデータを社外用データベースに書き込むことを確認しますか？"
-    );
+  const handleConfirmation = (confirmed) => {
+    setConfirmationOpen(false); // モーダルを閉じる
 
-    if (confirmation) {
-      // Insert your database writing operation here
-      const result = true; // This should be the result of the database operation
+    if (confirmed) {
+      // データベースへの書き込み処理を行う
+      const result = true; // 仮の結果
 
       if (result) {
         setNotification({
           message: "選択したデータの書き込みが成功しました",
           type: "success",
         });
-        setSelectedRows([]); // Clear selection on successful write
+        setSelectedRows([]); // 成功した場合は選択した行をクリア
       } else {
         setNotification({
           message: "データの書き込みに失敗しました、再度試してみてください",
@@ -123,6 +129,10 @@ const PlantDiff = () => {
         });
       }
     }
+  };
+
+  const handleWriteToDatabase = () => {
+    setConfirmationOpen(true); // 確認モーダルを表示
   };
 
   return (
@@ -139,7 +149,7 @@ const PlantDiff = () => {
           <CloseButton size="xl" iconSize={20} onClick={closeNotification} />
         </div>
       )}
-      {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}{" "}
+      {errorMessage && <div className="text-red-500 mt-2">{errorMessage}</div>}
       <div className="pb-2 bg-white flex justify-between">
         <input
           type="text"
@@ -154,7 +164,6 @@ const PlantDiff = () => {
           データベースへ書き込む
         </button>
       </div>
-      <div></div>
       <div
         className="overflow-x-auto"
         style={{ maxHeight: "75vh" }}
@@ -237,6 +246,29 @@ const PlantDiff = () => {
           </tbody>
         </Table>
       </div>
+      {/* 確認モーダル */}
+      <Modal
+        opened={isConfirmationOpen}
+        onClose={() => setConfirmationOpen(false)}
+        title="データ書き込みの確認"
+        size="sm"
+      >
+        <Text>選択したデータを社外用データベースに書き込みますか？</Text>
+        <div className="mt-4 flex justify-end">
+          <button
+            className="px-4 py-2 mr-2 bg-green-500 text-white rounded"
+            onClick={() => handleConfirmation(true)}
+          >
+            はい
+          </button>
+          <button
+            className="px-4 py-2 bg-red-500 text-white rounded"
+            onClick={() => handleConfirmation(false)}
+          >
+            キャンセル
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };
