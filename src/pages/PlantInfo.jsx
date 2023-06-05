@@ -97,7 +97,7 @@ const PlantInfo = () => {
   };
 
   const handleConfirmation = async (confirmed) => {
-    setConfirmationOpen(false); // Close the confirmation modal
+    setConfirmationOpen(false);
 
     if (confirmed) {
       try {
@@ -121,7 +121,7 @@ const PlantInfo = () => {
           });
           setTimeout(() => {
             setNotification(null);
-          }, 3000); // Close the notification after 3 seconds
+          }, 3000);
 
           setData((prevData) =>
             prevData.map((item) =>
@@ -285,7 +285,7 @@ const PlantInfo = () => {
                                     className="px-2 py-1 bg-blue-500 text-white rounded"
                                     onClick={() => handleSaveClick(item.id)}
                                   >
-                                    Save
+                                    DB書込
                                   </button>
                                   <button
                                     className="px-2 py-1 bg-red-500 text-white rounded"
@@ -330,7 +330,23 @@ const PlantInfo = () => {
             title="データの保存"
             size="sm"
           >
-            <Text>データを保存しますか？</Text>
+            <Table>
+              <thead>
+                <tr>
+                  <th>キー</th>
+                  <th>値</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedData &&
+                  Object.entries(selectedData).map(([key, value]) => (
+                    <tr key={key}>
+                      <td>{key}</td>
+                      <td>{value}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </Table>
             <div className="mt-4 flex justify-end">
               <button
                 className="px-4 py-2 mr-2 bg-green-500 text-white rounded"
