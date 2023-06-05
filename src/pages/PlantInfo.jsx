@@ -69,6 +69,7 @@ const PlantInfo = () => {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -157,10 +158,11 @@ const PlantInfo = () => {
       isEditable = false;
       return;
     }
+    const updatedValue = value !== null ? value : ""; // valueがnullの場合は空の文字列に置き換える
     setData((prevData) =>
       prevData.map((item) =>
         item.id === id && (key === "CRM_PLANT_ID" || key === "CRM_UNIT_ID")
-          ? { ...item, [key]: value, editable: isEditable }
+          ? { ...item, [key]: updatedValue, editable: isEditable }
           : item
       )
     );
@@ -279,8 +281,8 @@ const PlantInfo = () => {
                                   Edit
                                 </button>
                               )
-                            ) : column.key === "email" ||
-                              column.key === "phone" ? (
+                            ) : column.key === "CRM_PLANT_ID" ||
+                              column.key === "CRM_UNIT_ID" ? (
                               item.editable ? (
                                 <TextInput
                                   value={item[column.key]}
