@@ -52,7 +52,7 @@ const PlantInfo = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(process.env.NEXT_PUBULIC_API_PLANT_INFO);
+      const response = await fetch(process.env.NEXT_PUBLIC_API_PLANT_INFO);
       const plant_info = await response.json();
       const plant_info_ori = plant_info.map((plant) => {
         return {
