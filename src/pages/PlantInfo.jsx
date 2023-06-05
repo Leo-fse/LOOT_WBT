@@ -11,31 +11,23 @@ import Head from "next/head";
 import React, { useEffect, useState, useRef } from "react";
 
 const columns = [
-  { key: "id", label: "ID", width: "1/12", searchable: false },
-  { key: "FRAME", label: "FRAME", width: "2/12", searchable: true },
+  { key: "MACHINESN", label: "MACHINESN", width: "1/8", searchable: true },
+  { key: "FRAME", label: "FRAME", width: "1/8", searchable: true },
   {
     key: "PLANTADDRESS1",
     label: "PLANTADDRESS1",
-    width: "3/12",
+    width: "1/8",
     searchable: true,
   },
-  { key: "PLANTNAME", label: "PLANTNAME", width: "1/12", searchable: true },
-  { key: "UNITNAME", label: "UNITNAME", width: "1/12", searchable: true },
-  { key: "PLANTID", label: "PLANTID", width: "1/12", searchable: false },
-  { key: "SUBNAME", label: "SUBNAME", width: "1/12", searchable: false },
+  { key: "PLANTNAME", label: "PLANTNAME", width: "1/8", searchable: true },
+  { key: "UNITNAME", label: "UNITNAME", width: "1/8", searchable: true },
   {
     key: "CRM_PLANT_ID",
     label: "CRM_PLANT_ID",
-    width: "1/12",
-    searchable: false,
+    width: "1/8",
+    searchable: true,
   },
-  {
-    key: "CRM_UNIT_ID",
-    label: "CRM_UNIT_ID",
-    width: "1/12",
-    searchable: false,
-  },
-  { key: "actions", label: "Actions", width: "1/12", searchable: false },
+  { key: "CRM_UNIT_ID", label: "CRM_UNIT_ID", width: "1/8", searchable: true },
 ];
 
 const PlantInfo = () => {
@@ -121,7 +113,7 @@ const PlantInfo = () => {
           });
           setTimeout(() => {
             setNotification(null);
-          }, 3000);
+          }, 3000); // Close the notification after 3 seconds
 
           setData((prevData) =>
             prevData.map((item) =>
@@ -258,6 +250,7 @@ const PlantInfo = () => {
                       {column.label}
                     </th>
                   ))}
+                  <th className="px-4 py-2 w-1/8">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -269,6 +262,7 @@ const PlantInfo = () => {
                             <Skeleton height={30} />
                           </td>
                         ))}
+                        <td></td>
                       </tr>
                     ))
                   : filteredData.map((item) => (
@@ -278,47 +272,34 @@ const PlantInfo = () => {
                             key={`${item.id}-${column.key}`}
                             className={`px-4 py-2 w-${column.width}`}
                           >
-                            {column.key === "actions" ? (
-                              item.editable ? (
-                                <>
-                                  <button
-                                    className="px-2 py-1 bg-blue-500 text-white rounded"
-                                    onClick={() => handleSaveClick(item.id)}
-                                  >
-                                    DB書込
-                                  </button>
-                                  <button
-                                    className="px-2 py-1 bg-red-500 text-white rounded"
-                                    onClick={() => handleCancelClick(item.id)}
-                                  >
-                                    Cancel
-                                  </button>
-                                </>
-                              ) : (
-                                <button
-                                  className="px-2 py-1 bg-green-500 text-white rounded"
-                                  onClick={() => handleEditClick(item.id)}
-                                >
-                                  Edit
-                                </button>
-                              )
-                            ) : column.key === "CRM_PLANT_ID" ||
-                              column.key === "CRM_UNIT_ID" ? (
-                              item.editable ? (
-                                <TextInput
-                                  value={item[column.key] || ""}
-                                  onChange={(e) =>
-                                    handleInputChange(e, item.id, column.key)
-                                  }
-                                />
-                              ) : (
-                                <Text>{item[column.key]}</Text>
-                              )
-                            ) : (
-                              <Text>{item[column.key]}</Text>
-                            )}
+                            <Text>{item[column.key]}</Text>
                           </td>
                         ))}
+                        <td className="px-4 py-2 w-1/8">
+                          {item.editable ? (
+                            <>
+                              <button
+                                className="px-2 py-1 bg-blue-500 text-white rounded"
+                                onClick={() => handleSaveClick(item.id)}
+                              >
+                                DB書込
+                              </button>
+                              <button
+                                className="px-2 py-1 bg-red-500 text-white rounded"
+                                onClick={() => handleCancelClick(item.id)}
+                              >
+                                キャンセル
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              className="px-2 py-1 bg-green-500 text-white rounded"
+                              onClick={() => handleEditClick(item.id)}
+                            >
+                              編集
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
               </tbody>
@@ -328,7 +309,7 @@ const PlantInfo = () => {
             opened={isConfirmationOpen}
             onClose={() => setConfirmationOpen(false)}
             title="データの保存"
-            size="sm"
+            size="md"
           >
             <Table>
               <thead>
@@ -339,10 +320,10 @@ const PlantInfo = () => {
               </thead>
               <tbody>
                 {selectedData &&
-                  Object.entries(selectedData).map(([key, value]) => (
-                    <tr key={key}>
-                      <td>{key}</td>
-                      <td>{value}</td>
+                  columns.map((column) => (
+                    <tr key={column.key}>
+                      <td>{column.label}</td>
+                      <td>{selectedData[column.key]}</td>
                     </tr>
                   ))}
               </tbody>
