@@ -101,17 +101,20 @@ const PlantInfo = () => {
     if (confirmed) {
       try {
         // Perform the save operation
-        const response = await fetch(process.env.NEXT_PUBLIC_API_UPDATE_INFO, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            MACHINESN: selectedData.id,
-            CRM_PLANT_ID: selectedData.CRM_PLANT_ID,
-            CRM_UNIT_ID: selectedData.CRM_UNIT_ID,
-          }),
-        });
+        const response = await fetch(
+          process.env.NEXT_PUBLIC_API_PLANT_UPDATE_INFO,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              MACHINESN: selectedData.id,
+              CRM_PLANT_ID: selectedData.CRM_PLANT_ID,
+              CRM_UNIT_ID: selectedData.CRM_UNIT_ID,
+            }),
+          }
+        );
 
         if (response.ok) {
           setNotification({
