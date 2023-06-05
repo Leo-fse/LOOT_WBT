@@ -77,7 +77,14 @@ const PlantInfo = () => {
   const handleEditClick = (id) => {
     setData((prevData) =>
       prevData.map((item) =>
-        item.id === id ? { ...item, editable: !item.editable } : item
+        item.id === id
+          ? {
+              ...item,
+              editable: !item.editable,
+              CRM_PLANT_ID: item.CRM_PLANT_ID_ORIGINAL,
+              CRM_UNIT_ID: item.CRM_UNIT_ID_ORIGINAL,
+            }
+          : item
       )
     );
   };
@@ -272,7 +279,18 @@ const PlantInfo = () => {
                             key={`${item.id}-${column.key}`}
                             className={`px-4 py-2 w-${column.width}`}
                           >
-                            <Text>{item[column.key]}</Text>
+                            {item.editable &&
+                            (column.key === "CRM_PLANT_ID" ||
+                              column.key === "CRM_UNIT_ID") ? (
+                              <TextInput
+                                value={item[column.key] || ""}
+                                onChange={(e) =>
+                                  handleInputChange(e, item.id, column.key)
+                                }
+                              />
+                            ) : (
+                              <Text>{item[column.key]}</Text>
+                            )}
                           </td>
                         ))}
                         <td className="px-4 py-2 w-1/8">
@@ -314,7 +332,7 @@ const PlantInfo = () => {
             <Table>
               <thead>
                 <tr>
-                  <th>キー</th>
+                  <th>項目</th>
                   <th>値</th>
                 </tr>
               </thead>
