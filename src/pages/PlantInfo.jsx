@@ -285,7 +285,7 @@ const PlantInfo = () => {
                               column.key === "CRM_UNIT_ID" ? (
                               item.editable ? (
                                 <TextInput
-                                  value={item[column.key]}
+                                  value={item[column.key] || ""}
                                   onChange={(e) =>
                                     handleInputChange(e, item.id, column.key)
                                   }
