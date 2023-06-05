@@ -1,23 +1,40 @@
-import React, { useEffect, useState, useRef } from "react";
+import Layout from "@/components/Layout";
 import {
-  Table,
-  Text,
-  TextInput,
   CloseButton,
   Skeleton,
   Modal,
+  Table,
+  Text,
+  TextInput,
 } from "@mantine/core";
-import Layout from "@/components/Layout";
 import Head from "next/head";
+import React, { useEffect, useState, useRef } from "react";
 
 const columns = [
   { key: "id", label: "ID", width: "1/12", searchable: false },
-  { key: "title", label: "Title", width: "2/12", searchable: true },
-  { key: "body", label: "Body", width: "3/12", searchable: true },
-  { key: "username", label: "Username", width: "1/12", searchable: true },
-  { key: "city", label: "City", width: "1/12", searchable: true },
-  { key: "email", label: "Email", width: "1/12", searchable: false },
-  { key: "phone", label: "Phone", width: "1/12", searchable: false },
+  { key: "FRAME", label: "FRAME", width: "2/12", searchable: true },
+  {
+    key: "PLANTADDRESS1",
+    label: "PLANTADDRESS1",
+    width: "3/12",
+    searchable: true,
+  },
+  { key: "PLANTNAME", label: "PLANTNAME", width: "1/12", searchable: true },
+  { key: "UNITNAME", label: "UNITNAME", width: "1/12", searchable: true },
+  { key: "PLANTID", label: "PLANTID", width: "1/12", searchable: false },
+  { key: "SUBNAME", label: "SUBNAME", width: "1/12", searchable: false },
+  {
+    key: "CRM_PLANT_ID",
+    label: "CRM_PLANT_ID",
+    width: "1/12",
+    searchable: false,
+  },
+  {
+    key: "CRM_UNIT_ID",
+    label: "CRM_UNIT_ID",
+    width: "1/12",
+    searchable: false,
+  },
   { key: "actions", label: "Actions", width: "1/12", searchable: false },
 ];
 
@@ -35,31 +52,17 @@ const PlantInfo = () => {
 
   const fetchData = async () => {
     try {
-      const usersResponse = await fetch(
-        "https://jsonplaceholder.typicode.com/users"
-      );
-      const postsResponse = await fetch(
-        "https://jsonplaceholder.typicode.com/posts"
-      );
-
-      const users = await usersResponse.json();
-      const posts = await postsResponse.json();
-
-      const postsWithUserDetails = posts.map((post) => {
-        const correspondingUser = users.find((user) => user.id === post.userId);
+      const response = await fetch(process.env.NEXT_PUBULIC_API_PLANT_INFO);
+      const plant_info = await response.json();
+      const plant_info_ori = plant_info.map((plant) => {
         return {
-          ...post,
-          username: correspondingUser?.username,
-          email: correspondingUser?.email,
-          emailOriginal: correspondingUser?.email,
-          phone: correspondingUser?.phone,
-          phoneOriginal: correspondingUser?.phone,
-          city: correspondingUser?.address.city,
-          editable: false,
+          ...plant,
+          id: plant.MACHINESN,
+          CRM_PLANT_ID_ORIGINAL: plant.CRM_PLANT_ID,
+          CRM_UNIT_ID_ORIGINAL: plant.CRM_UNIT_ID,
         };
       });
-
-      setData(postsWithUserDetails);
+      setData(plant_info_ori);
       setIsLoading(false);
     } catch (error) {
       console.error("データの読み込みに失敗しました", error);
@@ -119,8 +122,8 @@ const PlantInfo = () => {
             ? {
                 ...item,
                 editable: false,
-                email: item.emailOriginal,
-                phone: item.phoneOriginal,
+                CRM_PLANT_ID: item.CRM_PLANT_ID_ORIGINAL,
+                CRM_UNIT_ID: item.CRM_UNIT_ID_ORIGINAL,
               }
             : item
         )
@@ -135,8 +138,8 @@ const PlantInfo = () => {
           ? {
               ...item,
               editable: false,
-              email: item.emailOriginal,
-              phone: item.phoneOriginal,
+              CRM_PLANT_ID: item.CRM_PLANT_ID_ORIGINAL,
+              CRM_UNIT_ID: item.CRM_UNIT_ID_ORIGINAL,
             }
           : item
       )
@@ -146,14 +149,17 @@ const PlantInfo = () => {
   const handleInputChange = (e, id, key) => {
     const { value } = e.target;
     let isEditable = true;
-    if ((key === "email" || key === "phone") && value.length > 25) {
+    if (
+      (key === "CRM_PLANT_ID" || key === "CRM_UNIT_ID") &&
+      value.length > 25
+    ) {
       setErrorMessage("入力は25文字以下である必要があります。");
       isEditable = false;
       return;
     }
     setData((prevData) =>
       prevData.map((item) =>
-        item.id === id && (key === "email" || key === "phone")
+        item.id === id && (key === "CRM_PLANT_ID" || key === "CRM_UNIT_ID")
           ? { ...item, [key]: value, editable: isEditable }
           : item
       )
